@@ -3,7 +3,7 @@ sys.path.append("../src")
 from komparse import *
 
 code = """
-SELECT * FROM users where name="drbolle";
+SELECT * FROM select where name='drbolle';
 """
 
 print(code)
@@ -19,7 +19,7 @@ sql = Grammar(case_sensitive = False)\
     .add_token("ASSIGN", "=")\
     .add_token("SEMICOLON", ";")\
     .add_token("ID", "[a-zA-Z_][a-zA-Z_0-9]*")\
-    .add_token("STRING", '"[^"]*"')
+    .add_token("STRING", "'[^']*'")
 
 sql.rule('select',
          Sequence(

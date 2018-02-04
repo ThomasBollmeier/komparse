@@ -8,9 +8,9 @@ class TokenType(object):
     
     def translate(self, grammar, token_stream):
         token = token_stream.peek()
-        if token.type == self._token_type:
+        if self._token_type in token.types:
             token_stream.advance()
-            return [Ast(token.type, token.value, self._id)]
+            return [Ast(self._token_type, token.value, self._id)]
         else:
             return None # <- translation failed
     
