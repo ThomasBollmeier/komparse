@@ -17,7 +17,7 @@ class Parser(object):
             return nodes and nodes[0] or None
         else:
             unexpected_token = token_stream.peek()
-            self._error = "Unexpected token: '{}' of type '{}'".format(unexpected_token.value, unexpected_token.type)
+            self._error = "Unexpected token: '{}' of types '{}'".format(unexpected_token.value, unexpected_token.types)
             return None
         
     def error(self):
