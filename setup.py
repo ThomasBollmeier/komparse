@@ -11,20 +11,20 @@ with open(path.join(here, 'README.md'), encoding='utf-8') as f:
 
 setup(
     name='komparse',
-    version='1.0.0b1',
+    version='1.2.0',
     description='A parser combinator library',
     long_description=long_description,
-    #url='', TODO: create website for alteraparser
+    #url='', TODO: create website for komparse
     author='Thomas Bollmeier',
     author_email='developer@tbollmeier.org',
-    license='Apache 2.0',
+    license='Apache-2.0',
     # See https://pypi.python.org/pypi?%3Aaction=list_classifiers
     classifiers=[
         # How mature is this project? Common values are
         #   3 - Alpha
         #   4 - Beta
         #   5 - Production/Stable
-        'Development Status :: 4 - Beta',
+        'Development Status :: 5 - Stable',
         # Indicate who your project is intended for
         'Intended Audience :: Developers',
         'Topic :: Software Development :: Build Tools',
