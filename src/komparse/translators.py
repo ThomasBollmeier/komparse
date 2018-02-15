@@ -7,6 +7,8 @@ class TokenType(object):
         self._id = id
     
     def translate(self, grammar, token_stream):
+        if not token_stream.has_next():
+            return None # <- translation failed
         token = token_stream.peek()
         if self._token_type in token.types:
             token_stream.advance()
