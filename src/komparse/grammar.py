@@ -47,7 +47,7 @@ class Grammar(object):
     def _regex_escape(self, s):
         ret = ""
         for ch in s:
-            if ch in ["*", "+", "?", "\\", "(", ")"]:
+            if ch in ["*", "+", "?", "\\", "(", ")", "|"]:
                 ret += "\\"
             ret += ch
         return ret
