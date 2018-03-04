@@ -23,12 +23,12 @@ sql = Grammar(case_sensitive = False)\
 
 sql.rule('select',
          Sequence(
-            TokenType('SELECT'),
-            Rule('field_list', 'fields'),
-            TokenType('FROM'),
-            TokenType('ID', 'table'),
-            Optional(Rule('where_clause', 'where')),
-            TokenType('SEMICOLON')),
+            sql.SELECT(),
+            sql.field_list('fields'),
+            sql.FROM(),
+            sql.ID('table'),
+            Optional(sql.where_clause('where')),
+            sql.SEMICOLON()),
         is_root=True)
 @sql.ast_transform('select')
 def select(ast):
@@ -38,7 +38,7 @@ def select(ast):
     ret.add_children_by_id(ast, 'where')
     return ret
 
-sql.rule('field_list', TokenType('ASTERISK'))
+sql.rule('field_list', sql.ASTERISK())
 @sql.ast_transform('field_list')
 def field_list(ast):
     children = ast.get_children()
@@ -49,19 +49,19 @@ def field_list(ast):
 
 sql.rule('where_clause',
          Sequence(
-            TokenType('WHERE'),
-            Rule('conditions')))
+            sql.WHERE(),
+            sql.conditions()))
 @sql.ast_transform('where_clause')
 def where_clause(ast):
     return ast.find_children_by_name('conditions')[0]
-    
+
 sql.rule('conditions',
          Sequence(
-            TokenType('ID', 'field'),
-            TokenType('ASSIGN'),
+            sql.ID('field'),
+            sql.ASSIGN(),
             OneOf(
-                TokenType('ID', 'expr'),
-                TokenType('STRING', 'expr'))))
+                sql.ID('expr'),
+                sql.STRING('expr'))))
 @sql.ast_transform('conditions')
 def condition(ast):
     ret = Ast('conditions')
@@ -79,6 +79,3 @@ if ast:
     print(ast.to_xml())
 else:
     print(sql_parser.error())
-
-
-
