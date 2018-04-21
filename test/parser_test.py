@@ -2,6 +2,23 @@ import sys
 sys.path.append("../src")
 from komparse import *
 
+class TestVisitor(object):
+
+    def __init__(self):
+        self._offset = 0
+        self._tabsize = 2
+
+    def enter_node(self, ast):
+        print(self._offset * " " + ast.name)
+        self._offset += self._tabsize
+        
+    def exit_node(self, ast):
+        self._offset -= self._tabsize
+
+    def visit_node(self, ast):
+        print(self._offset * " " + ast.name)
+
+
 code = """
 SELECT * FROM select where name='drbolle';
 """
@@ -79,3 +96,7 @@ if ast:
     print(ast.to_xml())
 else:
     print(sql_parser.error())
+
+if ast:
+    print()
+    ast.walk(TestVisitor())

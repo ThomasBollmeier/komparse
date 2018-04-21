@@ -11,12 +11,12 @@ with open(path.join(here, 'README.md'), encoding='utf-8') as f:
 
 setup(
     name='komparse',
-    version='1.2.3',
+    version='1.2.4',
     description='A parser combinator library',
     long_description=long_description,
     #url='', TODO: create website for komparse
     author='Thomas Bollmeier',
-    author_email='developer@tbollmeier.org',
+    author_email='entwickler@tbollmeier.de',
     license='Apache-2.0',
     # See https://pypi.python.org/pypi?%3Aaction=list_classifiers
     classifiers=[

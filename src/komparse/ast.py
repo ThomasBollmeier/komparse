@@ -1,17 +1,17 @@
 import os
 
 class Ast(object):
-    
+
     def __init__(self, name, value="", id=""):
         self.name = name
         self.value = value
         self.id = id
         self._attrs = {}
         self._children = []
-        
+
     def add_child(self, child):
         self._children.append(child)
-        
+
     def add_children_by_name(self, source_ast, name):
         children = source_ast.find_children_by_name(name)
         for child in children:
@@ -23,25 +23,25 @@ class Ast(object):
         for child in children:
             child.id = ""
             self.add_child(child)
-        
+
     def get_children(self):
         return self._children
-    
+
     def find_children_by_name(self, name):
         return [child for child in self._children if child.name == name]
-    
+
     def find_children_by_id(self, id_):
         return [child for child in self._children if child.id == id_]
-    
+
     def set_attr(self, name, value):
         self._attrs[name] = value
-        
+
     def get_attr(self, name):
         return self._attrs[name]
-    
+
     def has_attr(self, name):
         return name in self._attrs
-    
+
     def to_json(self):
         json = "{{ \"name\": \"{}\"".format(self.name)
         json += ", \"value\": \"{}\"".format(self._json_escape(self.value))
@@ -63,7 +63,7 @@ class Ast(object):
             json += ", \"children\": [{}]".format(children_json)
         json += " }"
         return json
-            
+
     def _json_escape(self, s):
         ret = ""
         for ch in s:
@@ -71,8 +71,8 @@ class Ast(object):
                 ch = "\\{}".format(ch)
             ret += ch
         return ret
-    
-    def to_xml(self, offset=0, delta=2): 
+
+    def to_xml(self, offset=0, delta=2):
         res = "<{}".format(self.name)
         attrs = self._attrs_to_str()
         if attrs:
@@ -93,7 +93,7 @@ class Ast(object):
             res += "</{}>".format(self.name)
             res = self._leftpad(offset, res)
         return res
-    
+
     def _attrs_to_str(self):
         if self.id:
             res = "id=\"{}\"".format(self.id)
@@ -104,6 +104,15 @@ class Ast(object):
                 res += " "
             res += "{}=\"{}\"".format(aname, self._attrs[aname])
         return res
-    
+
     def _leftpad(self, offset, s):
         return " " * offset + s
+
+    def walk(self, visitor):
+        if self._children:
+            visitor.enter_node(self)
+            for child in self._children:
+                child.walk(visitor)
+            visitor.exit_node(self)
+        else:
+            visitor.visit_node(self)
