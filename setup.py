@@ -11,7 +11,7 @@ with open(path.join(here, 'README.md'), encoding='utf-8') as f:
 
 setup(
     name='komparse',
-    version='1.2.4',
+    version='1.2.5',
     description='A parser combinator library',
     long_description=long_description,
     #url='', TODO: create website for komparse

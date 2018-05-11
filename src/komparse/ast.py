@@ -7,10 +7,20 @@ class Ast(object):
         self.value = value
         self.id = id
         self._attrs = {}
+        self._parent = None
         self._children = []
+
+    def copy(self):
+        """
+        Create a shallow copy
+        """
+        clone = Ast(self.name, self.value, self.id)
+        clone._attrs = self._attrs.copy()
+        return clone
 
     def add_child(self, child):
         self._children.append(child)
+        child._parent = self
 
     def add_children_by_name(self, source_ast, name):
         children = source_ast.find_children_by_name(name)
@@ -23,6 +33,9 @@ class Ast(object):
         for child in children:
             child.id = ""
             self.add_child(child)
+
+    def get_parent(self):
+        return self._parent
 
     def get_children(self):
         return self._children
