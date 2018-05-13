@@ -34,6 +34,11 @@ class Ast(object):
             child.id = ""
             self.add_child(child)
 
+    def remove_children(self):
+        for child in self._children:
+            child._parent = None
+        self._children = []
+
     def get_parent(self):
         return self._parent
 
