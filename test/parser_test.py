@@ -1,5 +1,6 @@
 import sys
-sys.path.append("../src")
+import unittest
+sys.path.insert(0, "../src")
 from komparse import *
 
 class TestVisitor(object):
