@@ -8,13 +8,33 @@ class Grammar(object):
     COMMENT = "__COMMENT__"
 
     def __init__(self, case_sensitive=True, wspace=[" ", "\t", "\r", "\n"]):
+        self._wspace_chars = wspace
+        self._comment_delims = []
+        self._string_delims = []
         self._patterns = []
         self._case_sensitive = case_sensitive
         self._set_wspace_chars(wspace)
         self._rules = {}
         self._root_rule = ""
         self._transformations = {}
-
+        
+    def get_whitespace_chars(self):
+        return self._wspace_chars
+    
+    def add_comment(self, start, end):
+        self._comment_delims.append((start, end))
+        return self
+        
+    def get_comments(self):
+        return self._comment_delims
+    
+    def add_string(self, start, end, escape="\\"):
+        self._string_delims.append((start, end, escape))
+        return self
+        
+    def get_strings(self):
+        return self._string_delims   
+    
     def get_token_patterns(self):
         return self._patterns
 
@@ -36,14 +56,6 @@ class Grammar(object):
                 kw += "({}|{})".format(ch.lower(), ch.upper())
         pattern = "^(" + kw + ")(?:" + self._wspace_pattern + "|\Z)"
         self._patterns.insert(0, (name_, re.compile(pattern)))
-        return self
-
-    def add_comment(self, start, end):
-        pattern = self._regex_escape(start)
-        pattern += "({})*".format(self._not_pattern(end))
-        pattern += self._regex_escape(end)
-        pattern = "(" + pattern + ")"
-        self._patterns.insert(0, (self.COMMENT, re.compile(pattern)))
         return self
 
     def _regex_escape(self, s):

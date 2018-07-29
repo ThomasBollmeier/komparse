@@ -1,4 +1,5 @@
 from .grammar import Grammar
+from .char_stream import StringStream
 from .scanner import Scanner
 from .parser import Parser
 from .ast import Ast

@@ -1,17 +1,18 @@
 import sys
-sys.path.append("../src")
-from komparse import (Grammar, Scanner)
+sys.path.insert(0, "../src")
+from komparse import (Grammar, Scanner, StringStream)
 
 code = """
-SELECT * FROM users where name="drbolle";
+-- Search for user 'drbolle'
+SELECT * FROM users where name="Dr. Bolle";
 """
 
 print(code)
 print()
 
 g = Grammar(case_sensitive = False)\
-    .add_comment("(*", "*)")\
     .add_comment("--", "\n")\
+    .add_string('"', '"')\
     .add_keyword("SELECT")\
     .add_keyword("FROM")\
     .add_keyword("WHERE")\
@@ -19,14 +20,12 @@ g = Grammar(case_sensitive = False)\
     .add_token("ASSIGN", "=")\
     .add_token("SEMICOLON", ";")\
     .add_token("ID", "[a-zA-Z_][a-zA-Z_0-9]*")\
-    .add_token("STRING", '"[^"]*"')
 
-token_stream = Scanner(g).find_tokens(code)
+scanner = Scanner(StringStream(code), g)
 
-while token_stream.has_next():
-    print(token_stream.advance())
-
-
+while scanner.has_next():
+    token = scanner.advance()
+    print(token)
 
 
 
