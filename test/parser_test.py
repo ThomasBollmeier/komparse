@@ -30,14 +30,14 @@ print()
 sql = Grammar(case_sensitive = False)\
     .add_comment("(*", "*)")\
     .add_comment("--", "\n")\
+    .add_string("'", "'", name="SINGLE_QUOTED_STR")\
     .add_keyword("SELECT")\
     .add_keyword("FROM")\
     .add_keyword("WHERE")\
     .add_token("ASTERISK", r"\*")\
     .add_token("ASSIGN", "=")\
     .add_token("SEMICOLON", ";")\
-    .add_token("ID", "[a-zA-Z_][a-zA-Z_0-9]*")\
-    .add_token("STRING", "'[^']*'")
+    .add_token("ID", "[a-zA-Z_][a-zA-Z_0-9]*")
 
 sql.rule('select',
          Sequence(
@@ -79,7 +79,7 @@ sql.rule('conditions',
             sql.ASSIGN(),
             OneOf(
                 sql.ID('expr'),
-                sql.STRING('expr'))))
+                sql.SINGLE_QUOTED_STR('expr'))))
 @sql.ast_transform('conditions')
 def condition(ast):
     ret = Ast('conditions')

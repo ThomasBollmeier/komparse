@@ -1,5 +1,4 @@
 from collections import namedtuple
-from .token_stream import TokenStream
 from .char_stream import CharStream
 
 Token = namedtuple('Token', 'types value')
@@ -10,11 +9,16 @@ class Scanner(object):
         self._char_stream = char_stream
         self._grammar = grammar
         self._remaining = []
+        self._consumption = [[]]
         self._reader = StdReader(char_stream, self._grammar, self)
         
     def has_next(self):
         self._fill_buffer()
         return bool(self._remaining)
+    
+    def peek(self):
+        self._fill_buffer()
+        return self._remaining[-1]
     
     def advance(self):
         self._fill_buffer()
@@ -22,6 +26,21 @@ class Scanner(object):
             return self._remaining.pop()
         else:
             return None
+        
+    def open_transaction(self):
+        self._consumption.append([])
+    
+    def commit(self):
+        if len(self._consumption) == 1:
+            raise Exception("Commit not allowed")
+        self._consumption[-1] +=  self._consumption.pop()
+        
+    def undo(self):
+        if len(self._consumption) == 1:
+            raise Exception("Cannot be undone")
+        consumed = self._consumption.pop()
+        while consumed:
+            self._remaining.append(consumed.pop())
         
     def _fill_buffer(self):
         if not self._remaining:
@@ -62,6 +81,12 @@ class TokenReader(object):
     def _advance_char(self):
         self._chars += self._char_stream.advance()
         
+    def _remove_tail(self, tail):
+        self._chars = self._chars[:len(self._chars)-len(tail)]
+        
+    def _ends_with(self, tail):
+        return self._chars[-len(tail):] == tail
+        
 
 class StdReader(TokenReader):
     
@@ -86,41 +111,74 @@ class StdReader(TokenReader):
             self._advance_char()
             starts_comment, start, end = self._is_comment_start()
             if starts_comment:
-                self._chars = self._chars[:len(self._chars)-len(start)]
+                self._remove_tail(start)
                 tokens = self._create_tokens()
                 reader = CommentReader(self._char_stream, self._grammar, self._scanner)
                 reader.set_delimiters(start, end)
                 reader._init_chars(start)
                 self._scanner._reader = reader
                 return tokens
-            starts_string, start, end, esc = self._is_string_start()
+            starts_string, name, start, end, esc = self._is_string_start()
             if starts_string:
-                self._chars = self._chars[:len(self._chars)-len(start)]
+                self._remove_tail(start)
                 tokens = self._create_tokens()
                 reader = StringReader(self._char_stream, self._grammar, self._scanner)
+                reader.set_name(name)
                 reader.set_delimiters(start, end, esc)
-                reader._init_chars(start)
                 self._scanner._reader = reader
                 return tokens
                     
     def _create_tokens(self):
-        return self._chars and [Token(types=["TERM"], value=self._chars)] or []
+        tokens = []
+        remaining = self._chars
+        while remaining:
+            token_types, text = self._find_next_token(remaining)
+            if text is not None:
+                if token_types:
+                    tokens.append(Token(token_types, text))
+                remaining = remaining[len(text):]
+            else:
+                break
+        if remaining:
+            raise Exception("Code could not be resolved: {}".format(remaining))
+        return tokens
+    
+    def _find_next_token(self, s):
+        matches = []
+        for name, regex in self._grammar.get_token_patterns():
+            m = regex.match(s)
+            if m:
+                text = m.group(1)
+                matches.append((name, text))
+        return self._max_munch(sorted(matches, key=lambda it: len(it[1]), reverse=True))
+        
+    def _max_munch(self, sorted_matches):
+        token_types = []
+        max_len = None
+        max_text = None
+        for name, text in sorted_matches:
+            if max_len is None:
+                max_len = len(text)
+                max_text = text
+            if len(text) == max_len:
+                token_types.append(name) 
+            else:
+                break
+        return token_types, max_text
             
     def _is_comment_start(self):
         comment_delims = self._grammar.get_comments()
         for start, end in comment_delims:
-            tail = self._chars[-len(start):]
-            if tail == start:
+            if self._ends_with(start):
                 return True, start, end
         return False, None, None
 
     def _is_string_start(self):
         string_delims = self._grammar.get_strings()
-        for start, end, esc in string_delims:
-            tail = self._chars[-len(start):]
-            if tail == start:
-                return True, start, end, esc
-        return False, None, None, None
+        for name, start, end, esc in string_delims:
+            if self._ends_with(start):
+                return True, name, start, end, esc
+        return False, None, None, None, None
 
 
 class WSpaceReader(TokenReader):
@@ -150,17 +208,14 @@ class CommentReader(TokenReader):
         self._end = end
         
     def next_tokens(self):
-        len_end = len(self._end)
         while True:
             if self._peek_next_char() is None:
                 self._scanner._reader = StdReader(self._char_stream, self._grammar, self._scanner)
-                return [Token(types=["COMMENT"], value=self._chars)]
-                #return []
+                return []
             self._advance_char()
-            if self._chars[-len_end:] == self._end:
+            if self._ends_with(self._end):
                 self._scanner._reader = StdReader(self._char_stream, self._grammar, self._scanner)
-                return [Token(types=["COMMENT"], value=self._chars)]
-                #return []
+                return []
             
 
 class StringReader(TokenReader):
@@ -170,21 +225,30 @@ class StringReader(TokenReader):
         self._start = ""
         self._end = ""
         self._esc = ""
+        self._name = "STRING"
         
     def set_delimiters(self, start, end, esc):
         self._start = start
         self._end = end
         self._esc = esc
         
+    def set_name(self, name):
+        self._name = name
+        
     def next_tokens(self):
-        len_end = len(self._end)
+        escaped_end = self._esc + self._end
         while True:
             if self._peek_next_char() is None:
                 return None
             self._advance_char()
-            if self._chars[-len_end:] == self._end:
+            if self._esc and self._ends_with(escaped_end):
+                self._remove_tail(escaped_end)
+                self._chars += self._end
+                continue
+            if self._ends_with(self._end):
+                self._remove_tail(self._end)
                 self._scanner._reader = StdReader(self._char_stream, self._grammar, self._scanner)
-                return [Token(types=["STRING"], value=self._chars)]
+                return [Token(types=[self._name], value=self._chars)]
 
 
         

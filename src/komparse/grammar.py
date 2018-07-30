@@ -4,9 +4,6 @@ from .translators import TokenType, Rule
 
 class Grammar(object):
 
-    WHITESPACE = "__WSPACE__"
-    COMMENT = "__COMMENT__"
-
     def __init__(self, case_sensitive=True, wspace=[" ", "\t", "\r", "\n"]):
         self._wspace_chars = wspace
         self._comment_delims = []
@@ -28,8 +25,8 @@ class Grammar(object):
     def get_comments(self):
         return self._comment_delims
     
-    def add_string(self, start, end, escape="\\"):
-        self._string_delims.append((start, end, escape))
+    def add_string(self, start, end, escape="\\", name="STRING"):
+        self._string_delims.append((name, start, end, escape))
         return self
         
     def get_strings(self):
@@ -40,7 +37,6 @@ class Grammar(object):
 
     def _set_wspace_chars(self, chars):
         self._wspace_pattern = "[" + "".join(chars) + "]"
-        self._patterns.append((self.WHITESPACE, re.compile("^(" + self._wspace_pattern + ")")))
 
     def add_token(self, name, pattern):
         self._patterns.append((name, re.compile("^(" + pattern + ")")))
@@ -105,6 +101,9 @@ class Grammar(object):
     def __getattr__(self, name):
         for token_type, _ in self._patterns:
             if name == token_type:
+                return TokenTypeMaker(name)
+        for string_name, _, _, _ in self._string_delims:
+            if name == string_name:
                 return TokenTypeMaker(name)
         return RuleMaker(name)
 
