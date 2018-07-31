@@ -23,7 +23,9 @@ class Scanner(object):
     def advance(self):
         self._fill_buffer()
         if self._remaining:
-            return self._remaining.pop()
+            ret = self._remaining.pop()
+            self._consumption[-1].append(ret)
+            return ret
         else:
             return None
         
