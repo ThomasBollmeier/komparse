@@ -228,6 +228,11 @@ class StringReader(TokenReader):
         self._end = ""
         self._esc = ""
         self._name = "STRING"
+        self._immut_len = 0
+        
+    def _ends_with(self, tail):
+        mut_tail = self._chars[self._immut_len:]
+        return mut_tail[-len(tail):] == tail
         
     def set_delimiters(self, start, end, esc):
         self._start = start
@@ -239,18 +244,27 @@ class StringReader(TokenReader):
         
     def next_tokens(self):
         escaped_end = self._esc + self._end
+        escaped_esc = 2 * self._esc
         while True:
             if self._peek_next_char() is None:
                 return None
             self._advance_char()
-            if self._esc and self._ends_with(escaped_end):
-                self._remove_tail(escaped_end)
-                self._chars += self._end
+            if self._esc and self._escape(self._end) or self._escape(self._esc):
                 continue
             if self._ends_with(self._end):
                 self._remove_tail(self._end)
                 self._scanner._reader = StdReader(self._char_stream, self._grammar, self._scanner)
                 return [Token(types=[self._name], value=self._chars)]
+            
+    def _escape(self, ch):
+        escaped = self._esc + ch
+        if not self._ends_with(escaped):
+            return False
+        self._remove_tail(escaped)
+        self._chars += ch
+        self._immut_len = len(self._chars)
+        return True
+        
 
 
         

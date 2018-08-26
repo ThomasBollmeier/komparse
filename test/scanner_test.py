@@ -4,7 +4,7 @@ from komparse import (Grammar, Scanner, StringStream)
 
 code = """
 -- Search for user 'drbolle'
-SELECT * FROM users where name="Dr. #"Bolle#"";
+SELECT * FROM users where name="Dr. #"Bolle#" is our ###"One#"";
 """
 
 print(code)
