@@ -5,15 +5,13 @@ from os import path
 
 here = path.abspath(path.dirname(__file__))
 
-# Get the long description from the README file
-with open(path.join(here, 'README.md'), encoding='utf-8') as f:
-    long_description = f.read()
-
 setup(
     name='komparse',
-    version='1.4.1',
+    version='1.4.2',
     description='A parser combinator library',
-    long_description=long_description,
+    long_description="""
+    Komparse is a tiny Python library to build a parser combinator.
+    """,
     #url='', TODO: create website for komparse
     author='Thomas Bollmeier',
     author_email='entwickler@tbollmeier.de',
