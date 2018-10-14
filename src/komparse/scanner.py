@@ -111,12 +111,12 @@ class StdReader(TokenReader):
                 self._scanner._reader = WSpaceReader(self._char_stream, self._grammar, self._scanner)
                 return tokens
             self._advance_char()
-            starts_comment, start, end = self._is_comment_start()
+            starts_comment, start, end, nestable = self._is_comment_start()
             if starts_comment:
                 self._remove_tail(start)
                 tokens = self._create_tokens()
                 reader = CommentReader(self._char_stream, self._grammar, self._scanner)
-                reader.set_delimiters(start, end)
+                reader.set_delimiters(start, end, nestable)
                 reader._init_chars(start)
                 self._scanner._reader = reader
                 return tokens
@@ -170,10 +170,10 @@ class StdReader(TokenReader):
             
     def _is_comment_start(self):
         comment_delims = self._grammar.get_comments()
-        for start, end in comment_delims:
+        for start, end, nestable in comment_delims:
             if self._ends_with(start):
-                return True, start, end
-        return False, None, None
+                return True, start, end, nestable
+        return False, None, None, False
 
     def _is_string_start(self):
         string_delims = self._grammar.get_strings()
@@ -204,20 +204,27 @@ class CommentReader(TokenReader):
         TokenReader.__init__(self, char_stream, grammar, scanner)
         self._start = ""
         self._end = ""
+        self._nestable = False
         
-    def set_delimiters(self, start, end):
+    def set_delimiters(self, start, end, nestable):
         self._start = start
         self._end = end
+        self._nestable = nestable
         
     def next_tokens(self):
+        nest_level = 1
         while True:
             if self._peek_next_char() is None:
                 self._scanner._reader = StdReader(self._char_stream, self._grammar, self._scanner)
                 return []
             self._advance_char()
             if self._ends_with(self._end):
-                self._scanner._reader = StdReader(self._char_stream, self._grammar, self._scanner)
-                return []
+                nest_level -= 1
+                if nest_level == 0:
+                    self._scanner._reader = StdReader(self._char_stream, self._grammar, self._scanner)
+                    return []
+            elif self._nestable and self._ends_with(self._start):
+                nest_level += 1
             
 
 class StringReader(TokenReader):

@@ -18,8 +18,8 @@ class Grammar(object):
     def get_whitespace_chars(self):
         return self._wspace_chars
     
-    def add_comment(self, start, end):
-        self._comment_delims.append((start, end))
+    def add_comment(self, start, end, nestable=False):
+        self._comment_delims.append((start, end, nestable))
         return self
         
     def get_comments(self):

@@ -7,7 +7,7 @@ here = path.abspath(path.dirname(__file__))
 
 setup(
     name='komparse',
-    version='1.4.2',
+    version='1.4.3',
     description='A parser combinator library',
     long_description="""
     Komparse is a tiny Python library to build a parser combinator.
