@@ -3,8 +3,19 @@ from .translators import TokenType, Rule
 
 
 class Grammar(object):
+    """
+    Grammar defines the tokens and syntax rules of a
+    language
+    """
 
     def __init__(self, case_sensitive=True, wspace=[" ", "\t", "\r", "\n"]):
+        """
+        Creates a new grammar instance
+
+        Parameters:
+            -- case_sensitive (default: True) : if set the language is case sensitive
+            -- wspace : List of characters that are to be regarded as whitespace
+        """
         self._wspace_chars = wspace
         self._comment_delims = []
         self._string_delims = []
@@ -16,9 +27,20 @@ class Grammar(object):
         self._transformations = {}
         
     def get_whitespace_chars(self):
+        """
+        Return the list of whitespace characters
+        """
         return self._wspace_chars
     
     def add_comment(self, start, end, nestable=False):
+        """
+        Defines a comment 
+
+        Parameters:
+            -- start : String that starts the comment section
+            -- end : String that ends the comment section
+            -- nestable (default: False) : if set comment sections can be nested
+        """
         self._comment_delims.append((start, end, nestable))
         return self
         
