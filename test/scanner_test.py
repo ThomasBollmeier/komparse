@@ -60,10 +60,40 @@ def test_nested_comments():
         token = scanner.advance()
         print(token)
 
+def test_multiple_types_per_token():
+
+    g = Grammar()\
+        .add_token("ID", "[a-zA-Z_][a-zA-Z_0-9]*")\
+        .add_token("LBRACE", "{")\
+        .add_token("RBRACE", "}")\
+        .add_keyword("class")
+
+    code = """
+    class class { }
+    """
+
+    scanner = Scanner(StringStream(code), g)
+
+    while scanner.has_next():
+        token = scanner.advance()
+        print(token)
+
+    g.enable_multiple_types_per_token(False)
+
+    scanner = Scanner(StringStream(code), g)
+
+    while scanner.has_next():
+        token = scanner.advance()
+        print(token)
+
+
+
+
+
 
 if __name__ == "__main__":
     #test_sql()
-    test_nested_comments()
-
+    #test_nested_comments()
+    test_multiple_types_per_token()
 
 

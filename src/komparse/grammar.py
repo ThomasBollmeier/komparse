@@ -14,6 +14,7 @@ class Grammar(object):
         self._rules = {}
         self._root_rule = ""
         self._transformations = {}
+        self._multiple_types_per_token = True
         
     def get_whitespace_chars(self):
         return self._wspace_chars
@@ -34,6 +35,12 @@ class Grammar(object):
     
     def get_token_patterns(self):
         return self._patterns
+
+    def enable_multiple_types_per_token(self, enable=True):
+        self._multiple_types_per_token = enable
+
+    def multiple_types_per_token_enabled(self):
+        return self._multiple_types_per_token
 
     def _set_wspace_chars(self, chars):
         self._wspace_pattern = "[" + "".join(chars) + "]"

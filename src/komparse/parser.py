@@ -8,6 +8,9 @@ class Parser(object):
         self._grammar = grammar
         self._root = Rule(self._grammar.get_root_rule())
         self._error = ""
+
+    def get_grammar(self):
+        return self._grammar
         
     def parse(self, source):
         self._error = ""

@@ -163,7 +163,9 @@ class StdReader(TokenReader):
                 max_len = len(text)
                 max_text = text
             if len(text) == max_len:
-                token_types.append(name) 
+                if self._grammar.multiple_types_per_token_enabled() \
+                   or not token_types:
+                    token_types.append(name)
             else:
                 break
         return token_types, max_text
